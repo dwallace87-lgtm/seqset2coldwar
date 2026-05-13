@@ -419,12 +419,7 @@ input[type="hidden"] {}
   <div class="lock-msg"  id="lock-msg">You left this tab. Please keep your focus here during the assignment.</div>
   <div class="lock-count" id="lock-count">10</div>
   <div class="lock-label">seconds remaining</div>
-  <div class="pw-box" id="pw-box">
-    <p style="color:#d1d5db;font-size:0.85rem">Enter teacher password to continue:</p>
-    <input type="password" id="pw-input" placeholder="••••" maxlength="6">
-    <button onclick="checkPassword()">Unlock</button>
-    <span class="pw-error" id="pw-error"></span>
-  </div>
+
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
@@ -768,9 +763,9 @@ input[type="hidden"] {}
       Academic Integrity Log: Loading…
     </div>
     <button id="download-btn" onclick="downloadPDF()">⬇️ Download My Worksheet PDF</button>
-    <button id="submit-sheet-btn" onclick="submitToGoogleSheets()" style="margin-left:0.75rem;background:#2563eb;color:white;border:none;border-radius:8px;padding:0.85rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;">☁️ Submit to Google Sheets</button>
-    <p id="sheet-submit-status" style="font-size:0.9rem;color:#dbeafe;margin-top:0.9rem;min-height:1.4em;font-weight:600;"></p>
-    <p class="download-note" id="download-note">Complete all required fields to unlock the download button.</p>
+    <button id="submit-sheet-btn" onclick="submitToGoogleSheets()" style="display:none;margin-left:0.75rem;background:#2563eb;color:white;border:none;border-radius:8px;padding:0.85rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;">☁️ Submit to Google Sheets</button>
+    <p id="sheet-submit-status" style="display:none;font-size:0.9rem;color:#dbeafe;margin-top:0.9rem;min-height:1.4em;font-weight:600;"></p>
+    <p class="download-note" id="download-note">Enter first name, last name, and class period to unlock the PDF download.</p>
   </div>
 
 </div><!-- end #worksheet -->
@@ -1109,22 +1104,14 @@ function triggerLockout() {
 
   let seconds, msg;
   if (strikes === 1) {
-    seconds = 5; msg = '⚠️ Strike 1 of 3 — 5 second cooldown.';
+    seconds = 5; msg = '⚠️ Strike 1 — 5 second cooldown.';
   } else if (strikes === 2) {
-    seconds = 10; msg = '⚠️ Strike 2 of 3 — 10 second cooldown.';
+    seconds = 10; msg = '⚠️ Strike 2 — 10 second cooldown.';
   } else {
-    seconds = 0; msg = '🚨 Strike 3 — Teacher password required to continue.';
+    seconds = 15; msg = `🚨 Strike ${strikes} — 15 second cooldown. Violations are still being counted.`;
   }
 
   document.getElementById('lock-msg').textContent = msg;
-
-  if (strikes >= 3) {
-    document.getElementById('lock-count').style.display = 'none';
-    document.getElementById('pw-box').classList.add('show');
-    document.querySelector('.lock-label').style.display = 'none';
-    return;
-  }
-
   document.getElementById('lock-count').style.display = 'block';
   document.getElementById('lock-count').textContent = seconds;
   document.querySelector('.lock-label').style.display = 'block';
@@ -1136,26 +1123,10 @@ function triggerLockout() {
       clearInterval(countdown);
       overlay.classList.remove('active');
       lockActive = false;
+      updateIntegritySummary();
+      saveState();
     }
   }, 1000);
-}
-
-function checkPassword() {
-  const val = document.getElementById('pw-input').value.trim();
-  if (val === '2026') {
-    document.getElementById('lockout-overlay').classList.remove('active');
-    document.getElementById('pw-box').classList.remove('show');
-    document.getElementById('lock-count').style.display = 'block';
-    document.querySelector('.lock-label').style.display = 'block';
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-error').textContent = '';
-    lockActive = false;
-    logEvent('teacher_unlock', `Password accepted — lock lifted at ${strikes} strike${strikes !== 1 ? 's' : ''}`);
-    updateIntegritySummary();
-    saveState();
-  } else {
-    document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
-  }
 }
 
 
@@ -1417,6 +1388,11 @@ async function submitToGoogleSheets() {
 
 // ── PDF DOWNLOAD ───────────────────────────────────────────────
 function downloadPDF() {
+  if (!studentFirst || !studentLast || !studentPeriod) {
+    alert('Enter first name, last name, and class period before downloading the PDF.');
+    return;
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
 
