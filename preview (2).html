@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuban Missile Crisis – Reliability Worksheet</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --navy:    #0d1b2a;
+  --navy2:   #1a2f4a;
+  --gold:    #c8993a;
+  --gold-lt: #e8b84b;
+  --red:     #b91c1c;
+  --red-lt:  #fef2f2;
+  --green:   #166534;
+  --green-lt:#f0fdf4;
+  --blue:    #1e40af;
+  --blue-lt: #eff6ff;
+  --amber:   #92400e;
+  --amber-lt:#fffbeb;
+  --purple:  #5b21b6;
+  --purple-lt:#f5f3ff;
+  --paper:   #faf8f3;
+  --ink:     #111827;
+  --muted:   #6b7280;
+  --border:  #e5e7eb;
+  --warn-bg: #7f1d1d;
+  --lock-bg: rgba(10,10,10,0.94);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Prevent text selection everywhere except inside answer inputs/textareas */
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+textarea, input[type="text"], input[type="password"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #e8e4dc;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── LOCKOUT OVERLAY ─────────────────────────────────────────── */
+#lockout-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--lock-bg);
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  color: #fff;
+}
+#lockout-overlay.active { display: flex; }
+.lock-icon { font-size: 4rem; margin-bottom: 1rem; }
+.lock-title { font-size: 1.6rem; font-weight: 600; color: #fca5a5; margin-bottom: 0.5rem; }
+.lock-msg   { font-size: 1rem; color: #d1d5db; max-width: 420px; margin-bottom: 1.5rem; }
+.lock-count { font-size: 3.5rem; font-weight: 700; color: #fbbf24; }
+.lock-label { font-size: 0.8rem; color: #9ca3af; letter-spacing: 2px; text-transform: uppercase; margin-top: 0.25rem; }
+.pw-box {
+  display: none; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 1rem;
+}
+.pw-box.show { display: flex; }
+.pw-box input {
+  background: #1f2937; border: 1px solid #374151; color: #fff;
+  padding: 0.6rem 1.2rem; border-radius: 6px; font-size: 1.1rem;
+  text-align: center; letter-spacing: 4px; width: 180px;
+}
+.pw-box button {
+  background: var(--gold); color: #fff; border: none; cursor: pointer;
+  padding: 0.6rem 1.6rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem;
+}
+.pw-error { color: #f87171; font-size: 0.85rem; }
+
+/* ── GATE SCREEN ─────────────────────────────────────────────── */
+#gate {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.gate-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  padding: 2.5rem 2.8rem;
+  max-width: 520px; width: 100%;
+  text-align: center;
+}
+.gate-badge {
+  display: inline-block;
+  background: var(--navy);
+  color: var(--gold-lt);
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 0.35rem 0.9rem; border-radius: 20px;
+  margin-bottom: 1.2rem;
+}
+.gate-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.9rem; color: var(--navy);
+  line-height: 1.25; margin-bottom: 0.5rem;
+}
+.gate-sub {
+  color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem;
+}
+.gate-field { text-align: left; margin-bottom: 1.2rem; }
+.gate-field label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--muted); margin-bottom: 0.4rem;
+}
+.gate-field input,
+.gate-field select {
+  width: 100%; padding: 0.75rem 1rem;
+  border: 2px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  color: var(--ink); background: var(--paper);
+  transition: border-color 0.2s;
+}
+.gate-field input:focus,
+.gate-field select:focus { outline: none; border-color: var(--navy); }
+.gate-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+#start-btn {
+  width: 100%; margin-top: 0.5rem;
+  background: var(--navy); color: white;
+  border: none; border-radius: 8px;
+  padding: 0.9rem; font-size: 1rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+  opacity: 0.4; pointer-events: none;
+}
+#start-btn.ready { opacity: 1; pointer-events: auto; }
+#start-btn.ready:hover { background: var(--navy2); }
+.gate-note {
+  margin-top: 1rem; font-size: 0.78rem; color: var(--muted);
+  border-top: 1px solid var(--border); padding-top: 0.8rem;
+}
+
+/* ── MAIN WORKSHEET ─────────────────────────────────────────── */
+#worksheet { display: none; padding: 1.5rem; max-width: 860px; margin: 0 auto; }
+#worksheet.show { display: block; }
+
+/* header bar */
+.ws-header {
+  background: var(--navy);
+  border-radius: 14px; padding: 1.5rem 2rem;
+  color: white; margin-bottom: 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+}
+.ws-header-left h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem; line-height: 1.2; color: white;
+}
+.ws-header-left p { color: #93c5fd; font-size: 0.8rem; margin-top: 0.25rem; }
+.ws-student-tag {
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 0.6rem 1rem;
+  text-align: right; font-size: 0.85rem;
+}
+.ws-student-tag strong { display: block; color: var(--gold-lt); font-size: 1rem; }
+
+/* integrity bar */
+.integrity-bar {
+  background: white; border-radius: 10px;
+  padding: 0.6rem 1.2rem; margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  border: 1px solid var(--border); font-size: 0.8rem;
+}
+.integrity-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+.integrity-dot.warn { background: #f59e0b; }
+.integrity-dot.danger { background: #ef4444; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.integrity-text { flex: 1; color: var(--muted); }
+.strikes-tally { font-weight: 600; color: var(--ink); }
+
+/* time tracker */
+.time-bar {
+  background: white; border-radius: 10px;
+  padding: 0.6rem 1.2rem; margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  border: 1px solid var(--border); font-size: 0.8rem;
+}
+.timer-label { color: var(--muted); }
+#timer-display { font-weight: 700; font-size: 1rem; color: var(--navy); font-variant-numeric: tabular-nums; }
+
+/* section cards */
+.section-card {
+  background: white; border-radius: 14px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+.section-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid currentColor;
+}
+.section-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+  color: white;
+}
+.section-title { font-weight: 700; font-size: 1rem; }
+.section-time  { margin-left: auto; font-size: 0.75rem; opacity: 0.7; font-weight: 500; }
+.section-body  { padding: 1.4rem 1.5rem; }
+
+/* color themes */
+.theme-teal   { color: #0f766e; border-color: #0f766e; }
+.theme-teal   .section-num { background: #0f766e; }
+.theme-teal   .section-body { background: #f0fdfa; }
+
+.theme-blue   { color: var(--blue); border-color: var(--blue); }
+.theme-blue   .section-num { background: var(--blue); }
+.theme-blue   .section-body { background: var(--blue-lt); }
+
+.theme-amber  { color: var(--amber); border-color: var(--amber); }
+.theme-amber  .section-num { background: var(--amber); }
+.theme-amber  .section-body { background: var(--amber-lt); }
+
+.theme-green  { color: var(--green); border-color: var(--green); }
+.theme-green  .section-num { background: var(--green); }
+.theme-green  .section-body { background: var(--green-lt); }
+
+.theme-purple { color: var(--purple); border-color: var(--purple); }
+.theme-purple .section-num { background: var(--purple); }
+.theme-purple .section-body { background: var(--purple-lt); }
+
+/* doc box */
+.doc-box {
+  border-radius: 8px; padding: 1.1rem 1.3rem;
+  margin-bottom: 1rem; border-left: 4px solid;
+}
+.doc-box-blue   { background: #dbeafe; border-color: var(--blue); }
+.doc-box-red    { background: #fee2e2; border-color: #dc2626; }
+.doc-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--muted); margin-bottom: 0.4rem;
+}
+.doc-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.6rem; }
+.doc-excerpt {
+  font-size: 0.88rem; font-style: italic; color: #374151;
+  border-left: 2px solid rgba(0,0,0,0.15); padding-left: 0.75rem;
+  line-height: 1.7;
+}
+.doc-excerpt em { font-style: normal; color: var(--blue); font-weight: 600; }
+
+.doc-excerpt {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+.doc-highlight-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.85rem 0 0.75rem;
+}
+.doc-highlight-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+}
+.doc-highlight-btn,
+.doc-highlight-clear {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.doc-highlight-btn:hover,
+.doc-highlight-clear:hover { border-color: #9ca3af; }
+.doc-highlight-btn.yellow { background: #fef9c3; }
+.doc-highlight-btn.red { background: #fecdd3; }
+.doc-highlight-clear { color: var(--muted); }
+.hl-yellow { background: #fef3a6; border-radius: 0.18rem; padding: 0 0.08rem; }
+.hl-red { background: #fecaca; border-radius: 0.18rem; padding: 0 0.08rem; }
+
+/* checkbox row */
+.check-grid { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.75rem; }
+.check-item {
+  display: flex; align-items: flex-start; gap: 0.65rem;
+  background: white; border-radius: 8px; padding: 0.65rem 0.85rem;
+  border: 2px solid transparent; cursor: pointer;
+  transition: all 0.15s; font-size: 0.88rem;
+}
+.check-item:hover { border-color: #6b7280; }
+.check-item.selected { border-color: #0f766e; background: #ccfbf1; }
+.check-item input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+.check-item label { cursor: pointer; }
+
+/* question label */
+.q-label {
+  font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--muted); margin-bottom: 0.4rem; margin-top: 1rem;
+  display: block;
+}
+.q-label:first-child { margin-top: 0; }
+
+/* fill-in blanks */
+.fill-blank {
+  display: inline-block;
+  border-bottom: 2px solid #9ca3af;
+  min-width: 180px; padding: 0 4px;
+  font-style: italic; color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* highlight instruction */
+.highlight-note {
+  background: #fef9c3; border-radius: 6px; border-left: 3px solid #ca8a04;
+  padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #78350f;
+  margin-bottom: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;
+}
+.highlight-note span { font-size: 1rem; }
+
+/* textarea */
+textarea {
+  width: 100%; border: 2px solid var(--border); border-radius: 8px;
+  padding: 0.75rem 1rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; color: var(--ink); resize: vertical;
+  background: white; transition: border-color 0.2s;
+  line-height: 1.65;
+}
+textarea:focus { outline: none; border-color: var(--navy); }
+textarea::placeholder { color: #d1d5db; }
+
+/* short answer inline */
+.answer-line {
+  display: block; width: 100%;
+  border: none; border-bottom: 2px solid var(--border);
+  background: transparent; padding: 0.4rem 0;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.answer-line:focus { outline: none; border-color: var(--navy); }
+
+/* YES/NO toggle */
+.yn-row { display: flex; gap: 0.6rem; margin-top: 0.4rem; }
+.yn-btn {
+  padding: 0.5rem 1.4rem; border-radius: 8px; border: 2px solid var(--border);
+  background: white; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+  transition: all 0.15s;
+}
+.yn-btn:hover { border-color: var(--navy); }
+.yn-btn.yes-active { background: var(--green-lt); border-color: var(--green); color: var(--green); }
+.yn-btn.no-active  { background: var(--red-lt);   border-color: var(--red);   color: var(--red); }
+input[type="hidden"] {}
+
+/* sentence frame (Part 5) */
+.sentence-frame {
+  background: white; border-radius: 10px; border: 2px solid #e5e7eb;
+  padding: 1.1rem 1.3rem; margin-bottom: 0.9rem;
+}
+.sent-num {
+  display: inline-block; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--purple); color: white; font-size: 0.75rem;
+  font-weight: 700; text-align: center; line-height: 22px; margin-right: 0.4rem;
+  flex-shrink: 0;
+}
+.sent-fixed  { font-size: 0.9rem; color: var(--ink); margin-bottom: 0.4rem; }
+.sent-prompt { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; font-style: italic; }
+
+/* submit section */
+.submit-card {
+  background: var(--navy); border-radius: 14px;
+  padding: 1.8rem; text-align: center;
+  margin-bottom: 2rem; color: white;
+}
+.submit-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
+.submit-card p  { color: #93c5fd; font-size: 0.85rem; margin-bottom: 1.2rem; }
+.integrity-summary {
+  background: rgba(255,255,255,0.08); border-radius: 8px;
+  padding: 0.7rem 1rem; font-size: 0.8rem; margin-bottom: 1.2rem;
+  color: #d1d5db;
+}
+#download-btn {
+  background: var(--gold); color: white; border: none; border-radius: 8px;
+  padding: 0.85rem 2rem; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: background 0.2s;
+  opacity: 0.5; pointer-events: none;
+}
+#download-btn.ready { opacity: 1; pointer-events: auto; }
+#download-btn.ready:hover { background: var(--gold-lt); }
+.download-note { font-size: 0.75rem; color: #6b7280; margin-top: 0.75rem; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     LOCKOUT OVERLAY
+════════════════════════════════════════════════════════════════ -->
+<div id="lockout-overlay">
+  <div class="lock-icon">🔒</div>
+  <div class="lock-title" id="lock-title">Tab Switch Detected</div>
+  <div class="lock-msg"  id="lock-msg">You left this tab. Please keep your focus here during the assignment.</div>
+  <div class="lock-count" id="lock-count">10</div>
+  <div class="lock-label">seconds remaining</div>
+  <div class="pw-box" id="pw-box">
+    <p style="color:#d1d5db;font-size:0.85rem">Enter teacher password to continue:</p>
+    <input type="password" id="pw-input" placeholder="••••" maxlength="6">
+    <button onclick="checkPassword()">Unlock</button>
+    <span class="pw-error" id="pw-error"></span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     GATE SCREEN
+════════════════════════════════════════════════════════════════ -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-badge">🛡️ Northside Charter High School</div>
+    <h1 class="gate-title">Cuban Missile Crisis<br>Primary Source Analysis</h1>
+    <p class="gate-sub">Enter your info to unlock the worksheet. This is your only chance before it locks.</p>
+
+    <div class="gate-field">
+      <label>First Name</label>
+      <input type="text" id="fname" placeholder="e.g. Marcus" oninput="checkGate()">
+    </div>
+    <div class="gate-row">
+      <div class="gate-field">
+        <label>Last Name</label>
+        <input type="text" id="lname" placeholder="e.g. Thompson" oninput="checkGate()">
+      </div>
+      <div class="gate-field">
+        <label>Class Period</label>
+        <select id="period" onchange="checkGate()">
+          <option value="">— Select —</option>
+          <option value="3rd Period">3rd Period</option>
+          <option value="5th Period">5th Period</option>
+          <option value="6th Period">6th Period</option>
+          <option value="7th Period">7th Period</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="start-btn" onclick="startWorksheet()">Start Worksheet →</button>
+    <p class="gate-note">⚠️ Switching tabs during this worksheet will trigger a timed lockout. Stay focused — you've got this.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     WORKSHEET
+════════════════════════════════════════════════════════════════ -->
+<div id="worksheet">
+
+  <!-- header -->
+  <div class="ws-header">
+    <div class="ws-header-left">
+      <h1>Evaluating Mixed Reliability in the Cuban Missile Crisis</h1>
+      <p>U.S. History & Government · Regents SEQ Prep · ~25 Minutes</p>
+    </div>
+    <div class="ws-student-tag">
+      <strong id="student-display"></strong>
+      <span id="period-display"></span>
+    </div>
+  </div>
+
+  <!-- integrity bar -->
+  <div class="integrity-bar">
+    <div class="integrity-dot" id="integrity-dot"></div>
+    <span class="integrity-text">Academic Integrity Monitor</span>
+    <span class="strikes-tally" id="strikes-display">⚡ 0 strikes</span>
+  </div>
+
+  <!-- timer -->
+  <div class="time-bar">
+    <span class="timer-label">⏱ Time on Task:</span>
+    <span id="timer-display">00:00</span>
+    <span style="margin-left:auto;color:#6b7280;font-size:0.75rem">Keep moving — aim to finish in 25 min</span>
+  </div>
+
+  <!-- ── PART 1 ─────────────────────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-header theme-teal">
+      <div class="section-num">1</div>
+      <span class="section-title">Context Check-In</span>
+      <span class="section-time">⏱ ~2 min</span>
+    </div>
+    <div class="section-body theme-teal">
+      <div class="highlight-note">
+        <span>📌</span>
+        <span>Based on the mini-lecture we just finished, check the <strong>THREE facts</strong> that belong in the "Historical Context" paragraph for these documents.</span>
+      </div>
+
+      <div class="check-grid">
+        <label class="check-item" id="ci-0" onclick="toggleCheck(this,'ci-0','correct')">
+          <input type="checkbox" id="cb0">
+          <span>The United States and Soviet Union were competing in a nuclear arms race.</span>
+        </label>
+        <label class="check-item" id="ci-1" onclick="toggleCheck(this,'ci-1','trap')">
+          <input type="checkbox" id="cb1">
+          <span>The United States dropped an atomic bomb on Japan to end WWII.</span>
+        </label>
+        <label class="check-item" id="ci-2" onclick="toggleCheck(this,'ci-2','correct')">
+          <input type="checkbox" id="cb2">
+          <span>Fidel Castro allied with the Soviet Union, allowing them to place missiles 90 miles from Florida.</span>
+        </label>
+        <label class="check-item" id="ci-3" onclick="toggleCheck(this,'ci-3','correct')">
+          <input type="checkbox" id="cb3">
+          <span>The United States discovered secret Soviet missile sites in Cuba in October 1962.</span>
+        </label>
+      </div>
+      <div id="check-feedback" style="display:none;margin-top:0.75rem;padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;"></div>
+      <input type="hidden" id="p1-answer" value="">
+
+      <!-- MC: Outside Information -->
+      <div style="margin-top:1.3rem;border-top:2px dashed #99f6e4;padding-top:1.1rem;">
+        <div class="highlight-note" style="margin-bottom:0.85rem;">
+          <span>🧠</span>
+          <span><strong>Bonus Context Question:</strong> On the Regents SEQ, you can earn extra points by connecting <em>outside information</em> — facts you know that aren't in the documents — to your historical context. Which of the following would be the BEST outside information to include in your context paragraph for these documents?</span>
+        </div>
+
+        <div class="check-grid" id="mc-grid">
+          <label class="check-item mc-opt" id="mc-0" onclick="selectMC(0)">
+            <input type="radio" name="mc-oi" style="flex-shrink:0;margin-top:2px;">
+            <span><strong>A.</strong> The U.S. policy of containment, established after WWII, was designed to stop the spread of communism — making Soviet missiles in Cuba a direct challenge to that policy.</span>
+          </label>
+          <label class="check-item mc-opt" id="mc-1" onclick="selectMC(1)">
+            <input type="radio" name="mc-oi" style="flex-shrink:0;margin-top:2px;">
+            <span><strong>B.</strong> The United States and Cuba had a strong trade relationship throughout the 1950s that benefited both economies.</span>
+          </label>
+          <label class="check-item mc-opt" id="mc-2" onclick="selectMC(2)">
+            <input type="radio" name="mc-oi" style="flex-shrink:0;margin-top:2px;">
+            <span><strong>C.</strong> The Korean War ended in 1953 in a stalemate, showing that the U.S. and USSR could avoid direct military conflict.</span>
+          </label>
+          <label class="check-item mc-opt" id="mc-3" onclick="selectMC(3)">
+            <input type="radio" name="mc-oi" style="flex-shrink:0;margin-top:2px;">
+            <span><strong>D.</strong> NASA's space program was expanding rapidly in the early 1960s, reflecting American scientific ambition during the Cold War.</span>
+          </label>
+        </div>
+
+        <div id="mc-feedback" style="display:none;margin-top:0.75rem;padding:0.75rem 1rem;border-radius:8px;font-size:0.88rem;line-height:1.6;"></div>
+        <input type="hidden" id="mc-answer" value="">
+      </div>
+
+    </div>
+  </div> ─────────────────────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-header theme-blue">
+      <div class="section-num">2</div>
+      <span class="section-title">Analyzing Document 1 for Point of View</span>
+      <span class="section-time">⏱ ~7 min</span>
+    </div>
+    <div class="section-body theme-blue">
+      <div class="doc-box doc-box-blue">
+        <div class="doc-label">📄 Document 1</div>
+        <div class="doc-title">Radio and Television Report to the American People on the Soviet Arms Buildup in Cuba</div>
+        <div style="font-size:0.78rem;color:#374151;margin-bottom:0.7rem;"><strong>Author:</strong> President John F. Kennedy &nbsp;·&nbsp; <strong>Date:</strong> October 22, 1962 &nbsp;·&nbsp; <strong>Source:</strong> JFK Presidential Library &amp; Museum</div>
+        <div class="doc-highlight-toolbar"><span class="doc-highlight-label">Highlight tool</span><button type="button" class="doc-highlight-btn yellow" onclick="applyHighlight('doc1-excerpt', 'yellow')">Pastel yellow</button><button type="button" class="doc-highlight-btn red" onclick="applyHighlight('doc1-excerpt', 'red')">Pastel red</button><button type="button" class="doc-highlight-clear" onclick="clearHighlights('doc1-excerpt')">Clear highlights</button></div>
+        <div class="doc-excerpt" id="doc1-excerpt" style="overflow:hidden;">
+          <figure style="float:right;margin:0 0 0.5rem 1rem;width:115px;text-align:center;">
+            <img src="https://media.wbur.org/wp/2017/05/0522_jfk-ap.jpg"
+              alt="President John F. Kennedy"
+              onerror="this.closest('figure').style.display='none'"
+              style="width:115px;height:145px;object-fit:cover;object-position:top center;border-radius:5px;border:2px solid #bfdbfe;display:block;">
+            <figcaption style="font-size:0.68rem;color:#4b5563;font-style:italic;margin-top:0.3rem;line-height:1.35;">Pres. John F. Kennedy addresses the nation, October 1962.</figcaption>
+          </figure>
+          "Good evening, my fellow citizens:<br><br>
+          This Government, as promised, has maintained the closest surveillance of the Soviet military buildup on the island of Cuba. Within the past week, <em>unmistakable evidence</em> has established the fact that a series of <em>offensive missile sites</em> is now in preparation on that <em>imprisoned island</em>. This urgent transformation of Cuba into an important strategic base — by the presence of these large, long-range, and clearly <em>offensive weapons of sudden mass destruction</em> — constitutes an <em>explicit threat</em> to the peace and security of all the Americas...<br><br>
+          We no longer live in a world where only the actual firing of weapons represents a sufficient challenge to a nation's security to constitute maximum peril. Nuclear weapons are so destructive and ballistic missiles are so swift, that any substantially increased possibility of their use or any sudden change in their deployment may well be regarded as a definite threat to peace.<br><br>
+          ...But this <em>secret, swift, and extraordinary buildup</em> of Communist missiles — in an area well known to have a special and historical relationship to the United States and the nations of the Western Hemisphere, in <em>violation of Soviet assurances</em>, and in <em>defiance</em> of American and hemispheric policy — this sudden, <em>clandestine decision</em> to station strategic weapons for the first time outside of Soviet soil — is a <em>deliberately provocative and unjustified change</em> in the status quo which cannot be accepted by this country..."
+        </div>
+      </div>
+
+      <div class="highlight-note">
+        <span>✏️</span>
+        <span>The words in <strong style="color:#1e40af">blue bold</strong> are already highlighted for you. In the real doc, underline at least 3 more charged words you notice.</span>
+      </div>
+
+      <span class="q-label">Who is the Audience?</span>
+      <input class="answer-line" type="text" id="p2-audience" placeholder="Who is Kennedy speaking to?" oninput="checkDownload()">
+
+      <span class="q-label">What is Kennedy's Purpose? (Why is he giving this speech right now?)</span>
+      <textarea rows="3" id="p2-purpose" placeholder="To convince the audience that..." oninput="checkDownload()"></textarea>
+
+      <span class="q-label">Identify the POV/Bias: Fill in the blanks below.</span>
+      <p style="font-size:0.9rem;margin-bottom:0.5rem;margin-top:0.25rem;">
+        JFK portrays the United States as completely
+        <input type="text" id="p2-us" style="border:none;border-bottom:2px solid #9ca3af;width:140px;padding:2px 4px;font-size:0.9rem;background:transparent" placeholder="___________" oninput="checkDownload()">
+        and the Soviet actions as completely
+        <input type="text" id="p2-soviet" style="border:none;border-bottom:2px solid #9ca3af;width:140px;padding:2px 4px;font-size:0.9rem;background:transparent" placeholder="___________" oninput="checkDownload()">.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── PART 3 ─────────────────────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-header theme-amber">
+      <div class="section-num">3</div>
+      <span class="section-title">The "Missing Piece" in Document 2</span>
+      <span class="section-time">⏱ ~6 min</span>
+    </div>
+    <div class="section-body theme-amber">
+      <div class="highlight-note">
+        <span>🔍</span>
+        <span>Read Khrushchev's letter specifically to hunt for the information JFK left out. This is the <strong>aha moment</strong> of the whole assignment.</span>
+      </div>
+
+      <div class="doc-box doc-box-red">
+        <div class="doc-label">📄 Document 2</div>
+        <div class="doc-title">Letter From Chairman Khrushchev to President Kennedy</div>
+        <div style="font-size:0.78rem;color:#374151;margin-bottom:0.7rem;"><strong>Author:</strong> Chairman Nikita Khrushchev &nbsp;·&nbsp; <strong>Date:</strong> October 27, 1962 &nbsp;·&nbsp; <strong>Source:</strong> U.S. Dept. of State / Office of the Historian</div>
+        <div class="doc-highlight-toolbar"><span class="doc-highlight-label">Highlight tool</span><button type="button" class="doc-highlight-btn yellow" onclick="applyHighlight('doc2-excerpt', 'yellow')">Pastel yellow</button><button type="button" class="doc-highlight-btn red" onclick="applyHighlight('doc2-excerpt', 'red')">Pastel red</button><button type="button" class="doc-highlight-clear" onclick="clearHighlights('doc2-excerpt')">Clear highlights</button></div>
+        <div class="doc-excerpt" id="doc2-excerpt" style="overflow:hidden;">
+          <figure style="float:right;margin:0 0 0.5rem 1rem;width:115px;text-align:center;">
+            <img src="https://www.thoughtco.com/thmb/RKOryay42O5AKe-FUvg0PRUSRwE=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Khrushchev-UN-3000-3x2gty-5b88511446e0fb00501fcf5f.jpg"
+              alt="Chairman Nikita Khrushchev"
+              onerror="this.closest('figure').style.display='none'"
+              style="width:115px;height:145px;object-fit:cover;object-position:top center;border-radius:5px;border:2px solid #fecaca;display:block;">
+            <figcaption style="font-size:0.68rem;color:#4b5563;font-style:italic;margin-top:0.3rem;line-height:1.35;">Chairman Nikita Khrushchev addresses the UN, 1960.</figcaption>
+          </figure>
+          "You are disturbed over Cuba. You say that this disturbs you because it is 90 miles by sea from the coast of the United States of America. But <em style="color:#dc2626">Turkey adjoins us</em>; our sentries patrol back and forth and see each other. Do you consider, then, that you have the right to demand security for your own country and the removal of the weapons you call offensive, but do not accord the same right to us? You have placed destructive missile weapons, which you call offensive, in <em style="color:#dc2626">Turkey, literally next to us</em>.<br><br>
+          I therefore make this proposal: We are willing to remove from Cuba the means which you regard as offensive. We are willing to carry this out and to make this pledge in the United Nations. Your representatives will make a declaration to the effect that the United States, for its part, considering the uneasiness and anxiety of the Soviet State, will remove its analogous means from Turkey. Let us reach agreement as to the period of time needed by you and by us to bring this about. And, after that, persons entrusted by the United Nations Security Council could inspect on the spot the fulfillment of the pledges made."
+        </div>
+      </div>
+
+      <span class="q-label">According to Khrushchev, what did the United States do in Turkey?</span>
+      <textarea rows="3" id="p3-turkey" placeholder="Be specific — what exactly is Khrushchev pointing out?" oninput="checkDownload()"></textarea>
+
+      <span class="q-label">Did President Kennedy mention Turkey in Document 1?</span>
+      <div class="yn-row">
+        <button class="yn-btn" id="yn-yes" onclick="setYN('yes')">YES</button>
+        <button class="yn-btn" id="yn-no"  onclick="setYN('no')">NO</button>
+      </div>
+      <input type="hidden" id="p3-yn" value="">
+    </div>
+  </div>
+
+  <!-- ── PART 4 ─────────────────────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-header theme-green">
+      <div class="section-num">4</div>
+      <span class="section-title">The "Mixed Reliability" Connection</span>
+      <span class="section-time">⏱ ~5 min</span>
+    </div>
+    <div class="section-body theme-green">
+      <div class="highlight-note">
+        <span>🎯</span>
+        <span>Regents graders want to see you argue that a document is <strong>reliable for one thing</strong> but <strong>less reliable for another</strong>. That's what "mixed reliability" means.</span>
+      </div>
+
+      <span class="q-label">Why is Document 1 RELIABLE?</span>
+      <p style="font-size:0.9rem;margin-bottom:0.5rem;">
+        It is a highly reliable record of the
+        <input type="text" id="p4-reliable1" style="border:none;border-bottom:2px solid #9ca3af;width:160px;padding:2px 4px;font-size:0.9rem;background:transparent" placeholder="____________" oninput="checkDownload()">
+        point of view, and it accurately shows how the US government explained the crisis to the
+        <input type="text" id="p4-reliable2" style="border:none;border-bottom:2px solid #9ca3af;width:180px;padding:2px 4px;font-size:0.9rem;background:transparent" placeholder="____________" oninput="checkDownload()">.
+      </p>
+
+      <span class="q-label" style="margin-top:1rem;">Why is Document 1 BIASED (less reliable for the full truth)?</span>
+      <p style="font-size:0.9rem;margin-bottom:0.5rem;">
+        It is biased because JFK leaves out a major fact. He fails to mention that the US had already placed missiles in
+        <input type="text" id="p4-biased" style="border:none;border-bottom:2px solid #9ca3af;width:120px;padding:2px 4px;font-size:0.9rem;background:transparent" placeholder="________" oninput="checkDownload()">,
+        which makes the US look completely innocent when they were actually part of the problem.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── PART 5 ─────────────────────────────────────────────── -->
+  <div class="section-card">
+    <div class="section-header theme-purple">
+      <div class="section-num">5</div>
+      <span class="section-title">Drafting the Regents Paragraph</span>
+      <span class="section-time">⏱ ~5 min</span>
+    </div>
+    <div class="section-body theme-purple">
+      <div class="highlight-note">
+        <span>✍️</span>
+        <span>Use your answers from Part 4 to fill in the blanks below. This is the exact structure you will use on your actual SEQ Set 2!</span>
+      </div>
+
+      <div class="sentence-frame">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.6rem">
+          <span class="sent-num">1</span>
+          <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280">The Claim — Write It Yourself</span>
+        </div>
+        <div class="sent-prompt" style="margin-bottom:0.6rem;">
+          💡 <strong>Stem to guide you:</strong> A claim about mixed reliability needs two parts — what the document <em>is</em> reliable for, and what makes it <em>biased</em>. Use this structure:<br><br>
+          <span style="background:#ede9fe;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.85rem;display:inline-block;margin-top:0.3rem;">
+            "The reliability of Document 1 is mixed because it <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>, but it is <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>."
+          </span>
+        </div>
+        <div class="sent-prompt">Now write the full sentence in your own words:</div>
+        <textarea rows="3" id="p5-s1" placeholder="The reliability of Document 1 is mixed because..." oninput="checkDownload()"></textarea>
+      </div>
+
+      <div class="sentence-frame">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.6rem">
+          <span class="sent-num">2</span>
+          <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280">The Reliable Part</span>
+        </div>
+        <div class="sent-prompt">On one hand, it is a reliable primary source for understanding how President Kennedy…</div>
+        <textarea rows="3" id="p5-s2" placeholder="Complete this sentence: how did Kennedy use this speech? What did he do or argue?" oninput="checkDownload()"></textarea>
+      </div>
+
+      <div class="sentence-frame">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.6rem">
+          <span class="sent-num">3</span>
+          <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280">The Evidence</span>
+        </div>
+        <div class="sent-prompt">For example, in Document 1, Kennedy calls the Soviet missiles a "deliberately provocative and unjustified change," which shows his purpose was to…</div>
+        <textarea rows="3" id="p5-s3" placeholder="What was he trying to do by using that kind of language?" oninput="checkDownload()"></textarea>
+      </div>
+
+      <div class="sentence-frame">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.6rem">
+          <span class="sent-num">4</span>
+          <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280">The Bias / Unreliable Part — Write It Yourself</span>
+        </div>
+        <div class="sent-prompt" style="margin-bottom:0.6rem;">
+          💡 <strong>Stem to guide you:</strong> This sentence needs to explain <em>what</em> Kennedy omits and <em>why</em> that omission creates bias. Use this structure:<br><br>
+          <span style="background:#ede9fe;padding:0.3rem 0.6rem;border-radius:6px;font-size:0.85rem;display:inline-block;margin-top:0.3rem;">
+            "However, the document is biased because Kennedy <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>, which makes the United States appear <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>."
+          </span>
+        </div>
+        <div class="sent-prompt">Now write the full sentence in your own words:</div>
+        <textarea rows="3" id="p5-s4" placeholder="However, the document is biased because..." oninput="checkDownload()"></textarea>
+      </div>
+
+      <div class="sentence-frame">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.6rem">
+          <span class="sent-num">5</span>
+          <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280">Use Doc 2 to Prove the Bias in Doc 1</span>
+        </div>
+        <div class="sent-prompt">We know this because in Document 2, Soviet leader Nikita Khrushchev points out that…</div>
+        <textarea rows="3" id="p5-s5" placeholder="What specific fact does Khrushchev bring up that JFK conveniently ignored?" oninput="checkDownload()"></textarea>
+      </div>
+
+      <div class="sentence-frame">
+        <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.4rem">
+          <span class="sent-num">6</span>
+          <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7280">Conclusion (Already Written)</span>
+        </div>
+        <div class="sent-fixed">Because Kennedy ignores the American missiles near the Soviet border, Document 1 is a reliable source for the US point of view, but it is biased and not a reliable summary of the whole truth.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SUBMIT ─────────────────────────────────────────────── -->
+  <div class="submit-card">
+    <h3>🎯 All Done? Download Your Work</h3>
+    <p>Make sure every section is filled in before you download — your responses will be saved as a PDF stamped with your name.</p>
+    <div class="integrity-summary" id="integrity-summary">
+      Academic Integrity Log: Loading…
+    </div>
+    <button id="download-btn" onclick="downloadPDF()">⬇️ Download My Worksheet PDF</button>
+    <button id="submit-sheet-btn" onclick="submitToGoogleSheets()" style="margin-left:0.75rem;background:#2563eb;color:white;border:none;border-radius:8px;padding:0.85rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;">☁️ Submit to Google Sheets</button>
+    <p id="sheet-submit-status" style="font-size:0.8rem;color:#dbeafe;margin-top:0.9rem;"></p>
+    <p class="download-note" id="download-note">Complete all required fields to unlock the download button.</p>
+  </div>
+
+</div><!-- end #worksheet -->
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+let studentFirst = '', studentLast = '', studentPeriod = '';
+let strikes = 0, lockActive = false, timerInterval, elapsedSeconds = 0;
+let integrityLog = [];
+let startTimestamp = null;
+
+// checkbox / MC / YN state
+let checkState = { 'ci-0': false, 'ci-1': false, 'ci-2': false, 'ci-3': false };
+let checkTypes  = { 'ci-0': 'correct', 'ci-1': 'trap', 'ci-2': 'correct', 'ci-3': 'correct' };
+let ynValue = '';
+
+const SS_KEY = 'cmc_worksheet_v1'; // localStorage key so refreshes/resets do not clear violations
+
+// ── SAVE STATE ─────────────────────────────────────────────────
+function saveState() {
+  const answerFields = [
+    'p2-audience','p2-purpose','p2-us','p2-soviet',
+    'p3-turkey','p4-reliable1','p4-reliable2','p4-biased',
+    'p5-s1','p5-s2','p5-s3','p5-s4','p5-s5'
+  ];
+  const answers = {};
+  answerFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) answers[id] = el.value;
+  });
+
+  const state = {
+    studentFirst, studentLast, studentPeriod,
+    strikes, elapsedSeconds, integrityLog,
+    checkState,
+    ynValue,
+    mcAnswer: document.getElementById('mc-answer') ? document.getElementById('mc-answer').value : '',
+    p1Answer: document.getElementById('p1-answer') ? document.getElementById('p1-answer').value : '',
+    answers,
+    docHighlights: {
+      doc1: document.getElementById('doc1-excerpt') ? document.getElementById('doc1-excerpt').innerHTML : '',
+      doc2: document.getElementById('doc2-excerpt') ? document.getElementById('doc2-excerpt').innerHTML : ''
+    },
+    savedAt: Date.now()
+  };
+  try { localStorage.setItem(SS_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ── RESTORE STATE ──────────────────────────────────────────────
+function restoreState() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(SS_KEY)); } catch(e) { return false; }
+  if (!saved || !saved.studentFirst) return false;
+
+  // Restore persistent state from localStorage so refresh/reset attempts do not clear strikes or progress.
+  studentFirst  = saved.studentFirst;
+  studentLast   = saved.studentLast;
+  studentPeriod = saved.studentPeriod;
+  strikes       = saved.strikes || 0;
+  elapsedSeconds = saved.elapsedSeconds || 0;
+  integrityLog  = saved.integrityLog || [];
+  checkState    = saved.checkState || checkState;
+  ynValue       = saved.ynValue || '';
+
+  // Show worksheet, hide gate
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('worksheet').classList.add('show');
+  document.getElementById('student-display').textContent = studentFirst + ' ' + studentLast;
+  document.getElementById('period-display').textContent  = studentPeriod;
+
+  // Restore text answers
+  if (saved.answers) {
+    Object.entries(saved.answers).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    });
+  }
+
+  if (saved.docHighlights) {
+    if (saved.docHighlights.doc1 && document.getElementById('doc1-excerpt')) document.getElementById('doc1-excerpt').innerHTML = saved.docHighlights.doc1;
+    if (saved.docHighlights.doc2 && document.getElementById('doc2-excerpt')) document.getElementById('doc2-excerpt').innerHTML = saved.docHighlights.doc2;
+  }
+
+  // Restore hidden fields
+  if (saved.p1Answer) document.getElementById('p1-answer').value = saved.p1Answer;
+  if (saved.mcAnswer !== undefined) document.getElementById('mc-answer').value = saved.mcAnswer;
+
+  // Restore checkboxes
+  Object.entries(checkState).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const cb = el.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = val;
+      if (val) el.classList.add('selected');
+    }
+  });
+
+  // Restore checkbox feedback
+  const selected = Object.entries(checkState).filter(([,v]) => v);
+  if (selected.length === 3) {
+    const traps = selected.filter(([k]) => checkTypes[k] === 'trap');
+    const fb = document.getElementById('check-feedback');
+    fb.style.display = 'block';
+    if (traps.length === 0) {
+      fb.style.background = '#dcfce7'; fb.style.color = '#166534';
+      fb.textContent = '✅ Nice — you picked the three that belong in your historical context paragraph!';
+    } else {
+      fb.style.background = '#fee2e2'; fb.style.color = '#991b1b';
+      fb.textContent = '🤔 One of those doesn\'t quite fit the crisis itself. Think about which one is from a different time and place.';
+    }
+  }
+
+  // Restore YN
+  if (ynValue) {
+    document.getElementById('yn-yes').className = 'yn-btn' + (ynValue === 'yes' ? ' yes-active' : '');
+    document.getElementById('yn-no').className  = 'yn-btn' + (ynValue === 'no'  ? ' no-active'  : '');
+    document.getElementById('p3-yn').value = ynValue;
+  }
+
+  // Restore MC selection
+  if (saved.mcAnswer !== '') {
+    const idx = parseInt(saved.mcAnswer);
+    if (!isNaN(idx)) {
+      const fb_data = typeof MC_FEEDBACK !== 'undefined' ? MC_FEEDBACK[idx] : null;
+      const chosen = document.getElementById('mc-' + idx);
+      if (chosen && fb_data) {
+        chosen.style.borderColor = fb_data.correct ? '#166534' : '#dc2626';
+        chosen.style.background  = fb_data.correct ? '#dcfce7' : '#fee2e2';
+        const fbBox = document.getElementById('mc-feedback');
+        if (fbBox) {
+          fbBox.style.display = 'block';
+          fbBox.style.background = fb_data.correct ? '#dcfce7' : '#fee2e2';
+          fbBox.style.color      = fb_data.correct ? '#166534' : '#991b1b';
+          fbBox.style.border     = fb_data.correct ? '1px solid #86efac' : '1px solid #fca5a5';
+          fbBox.innerHTML = fb_data.msg;
+        }
+      }
+    }
+  }
+
+  // Log the refresh as a strike
+  strikes++;
+  integrityLog.push({ t: elapsedSeconds.toFixed(1), type: 'page_refresh', detail: `Page refreshed — strike ${strikes} carried over` });
+
+  // Start timer from where they left off
+  startTimestamp = Date.now() - (elapsedSeconds * 1000);
+  timerInterval = setInterval(updateTimer, 1000);
+  setupIntegrityMonitor();
+
+  // Update UI
+  updateIntegritySummary();
+  const dot = document.getElementById('integrity-dot');
+  if (strikes === 0) dot.className = 'integrity-dot';
+  else if (strikes === 1) dot.className = 'integrity-dot warn';
+  else dot.className = 'integrity-dot danger';
+  document.getElementById('strikes-display').textContent = `⚡ ${strikes} strike${strikes !== 1 ? 's' : ''}`;
+
+  // If they were at 3+ strikes before refresh, immediately show password gate
+  if (strikes >= 3) triggerLockout();
+
+  checkDownload();
+  saveState();
+  return true;
+}
+
+// ── GATE ───────────────────────────────────────────────────────
+function checkGate() {
+  const fn = document.getElementById('fname').value.trim();
+  const ln = document.getElementById('lname').value.trim();
+  const p  = document.getElementById('period').value;
+  const btn = document.getElementById('start-btn');
+  if (fn && ln && p) btn.classList.add('ready');
+  else btn.classList.remove('ready');
+}
+
+function startWorksheet() {
+  const fn = document.getElementById('fname').value.trim();
+  const ln = document.getElementById('lname').value.trim();
+  const p  = document.getElementById('period').value;
+  if (!fn || !ln || !p) return;
+
+  studentFirst  = fn;
+  studentLast   = ln;
+  studentPeriod = p;
+
+  // Clear any old saved state when a genuinely new worksheet session begins
+  try { localStorage.removeItem(SS_KEY); } catch(e) {}
+
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('worksheet').classList.add('show');
+  document.getElementById('student-display').textContent = fn + ' ' + ln;
+  document.getElementById('period-display').textContent  = p;
+
+  startTimestamp = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+  setupIntegrityMonitor();
+  logEvent('session_start', 'Worksheet opened');
+  updateIntegritySummary();
+  saveState();
+}
+
+// ── TIMER ──────────────────────────────────────────────────────
+function updateTimer() {
+  elapsedSeconds++;
+  const m = String(Math.floor(elapsedSeconds / 60)).padStart(2,'0');
+  const s = String(elapsedSeconds % 60).padStart(2,'0');
+  document.getElementById('timer-display').textContent = m + ':' + s;
+  // Save every 10 seconds so progress is always fresh
+  if (elapsedSeconds % 10 === 0) saveState();
+}
+
+// ── INTEGRITY MONITOR ──────────────────────────────────────────
+function setupIntegrityMonitor() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && !lockActive) {
+      strikes++;
+      logEvent('tab_switch', `Strike ${strikes} — left visible area`);
+      triggerLockout();
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (strikes > 0) logEvent('page_refresh', 'Page reload attempted');
+  });
+
+  // ── COPY / PASTE / CUT / DRAG BLOCK ───────────────────────────
+  // Block ALL copy from anywhere on the page
+  document.addEventListener('copy', (e) => {
+    e.preventDefault();
+    if (['TEXTAREA','INPUT'].includes(e.target.tagName)) {
+      logEvent('copy_blocked', `Copy attempt in field: ${e.target.id || 'unknown'}`);
+    } else {
+      logEvent('copy_blocked', `Copy attempt on page content: ${e.target.tagName}`);
+    }
+    updateIntegritySummary();
+  });
+
+  // Block ALL cut
+  document.addEventListener('cut', (e) => {
+    e.preventDefault();
+    logEvent('cut_blocked', `Cut attempt in: ${e.target.id || e.target.tagName}`);
+    updateIntegritySummary();
+  });
+
+  // Block paste everywhere — no importing text from outside
+  document.addEventListener('paste', (e) => {
+    const tag = e.target.tagName;
+    if (tag === 'TEXTAREA' || tag === 'INPUT') {
+      e.preventDefault();
+      logEvent('paste_blocked', `Paste attempt blocked in field: ${e.target.id || 'unknown'}`);
+      updateIntegritySummary();
+      showNoPasteWarning(e.target);
+    }
+  });
+
+  // Block drag-and-drop into inputs
+  document.addEventListener('drop', (e) => {
+    if (['TEXTAREA','INPUT'].includes(e.target.tagName)) {
+      e.preventDefault();
+      logEvent('drag_drop_blocked', `Drag-drop attempt into field: ${e.target.id || 'unknown'}`);
+      updateIntegritySummary();
+    }
+  });
+  document.addEventListener('dragover', (e) => {
+    if (['TEXTAREA','INPUT'].includes(e.target.tagName)) e.preventDefault();
+  });
+
+  // Block Ctrl+A / Cmd+A select-all on the page (outside inputs)
+  document.addEventListener('keydown', (e) => {
+    const tag = e.target.tagName;
+    const isInput = tag === 'TEXTAREA' || tag === 'INPUT';
+    // Block Ctrl+A on non-input elements (would select all page text)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !isInput) {
+      e.preventDefault();
+      logEvent('select_all_blocked', 'Ctrl+A on page content blocked');
+    }
+    // Block Ctrl+C / Ctrl+X everywhere
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'x')) {
+      e.preventDefault();
+      logEvent('copy_key_blocked', `Ctrl+${e.key.toUpperCase()} blocked on ${e.target.tagName}`);
+      updateIntegritySummary();
+    }
+  });
+
+  // Block right-click everywhere on the worksheet
+  document.getElementById('worksheet').addEventListener('contextmenu', e => {
+    e.preventDefault();
+    logEvent('rightclick_blocked', `Right-click blocked on ${e.target.tagName}`);
+  });
+
+  // idle detection
+  let idleTimer;
+  function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(() => logEvent('idle_5min', 'No activity for 5 minutes'), 300000); }
+  ['keydown','mousemove','click'].forEach(ev => document.addEventListener(ev, resetIdle));
+}
+
+function logEvent(type, detail) {
+  const elapsed = startTimestamp ? ((Date.now() - startTimestamp)/1000).toFixed(1) : '0.0';
+  integrityLog.push({ t: elapsed, type, detail });
+  updateIntegritySummary();
+  const dot = document.getElementById('integrity-dot');
+  if (strikes === 0) { dot.className = 'integrity-dot'; }
+  else if (strikes === 1) { dot.className = 'integrity-dot warn'; }
+  else { dot.className = 'integrity-dot danger'; }
+  document.getElementById('strikes-display').textContent = `⚡ ${strikes} strike${strikes !== 1 ? 's' : ''}`;
+  saveState();
+}
+
+function updateIntegritySummary() {
+  const el = document.getElementById('integrity-summary');
+  if (!el) return;
+  const switchCount = integrityLog.filter(e => e.type === 'tab_switch').length;
+  const pasteCount  = integrityLog.filter(e => e.type === 'paste_blocked').length;
+  const dragCount   = integrityLog.filter(e => e.type === 'drag_drop_blocked').length;
+  el.textContent = `Tab switches: ${switchCount}  |  Paste attempts blocked: ${pasteCount}  |  Drag attempts blocked: ${dragCount}  |  Total events: ${integrityLog.length}`;
+}
+
+function showNoPasteWarning(field) {
+  // Remove any existing warning on this field
+  const existing = field.parentNode.querySelector('.no-paste-warn');
+  if (existing) existing.remove();
+  const warn = document.createElement('div');
+  warn.className = 'no-paste-warn';
+  warn.style.cssText = 'background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:0.4rem 0.75rem;font-size:0.8rem;margin-top:0.3rem;';
+  warn.textContent = '🚫 Copy/paste is disabled. You need to type your answer yourself.';
+  field.parentNode.insertBefore(warn, field.nextSibling);
+  setTimeout(() => warn.remove(), 3500);
+}
+
+// ── LOCKOUT ────────────────────────────────────────────────────
+function triggerLockout() {
+  lockActive = true;
+  const overlay = document.getElementById('lockout-overlay');
+  overlay.classList.add('active');
+
+  let seconds, msg;
+  if (strikes === 1) {
+    seconds = 5; msg = '⚠️ Strike 1 of 3 — 5 second cooldown.';
+  } else if (strikes === 2) {
+    seconds = 10; msg = '⚠️ Strike 2 of 3 — 10 second cooldown.';
+  } else {
+    seconds = 0; msg = '🚨 Strike 3 — Teacher password required to continue.';
+  }
+
+  document.getElementById('lock-msg').textContent = msg;
+
+  if (strikes >= 3) {
+    document.getElementById('lock-count').style.display = 'none';
+    document.getElementById('pw-box').classList.add('show');
+    document.querySelector('.lock-label').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('lock-count').style.display = 'block';
+  document.getElementById('lock-count').textContent = seconds;
+  document.querySelector('.lock-label').style.display = 'block';
+
+  const countdown = setInterval(() => {
+    seconds--;
+    document.getElementById('lock-count').textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(countdown);
+      overlay.classList.remove('active');
+      lockActive = false;
+    }
+  }, 1000);
+}
+
+function checkPassword() {
+  const val = document.getElementById('pw-input').value.trim();
+  if (val === '2026') {
+    document.getElementById('lockout-overlay').classList.remove('active');
+    document.getElementById('pw-box').classList.remove('show');
+    document.getElementById('lock-count').style.display = 'block';
+    document.querySelector('.lock-label').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-error').textContent = '';
+    lockActive = false;
+    logEvent('teacher_unlock', `Password accepted — lock lifted at ${strikes} strike${strikes !== 1 ? 's' : ''}`);
+    updateIntegritySummary();
+    saveState();
+  } else {
+    document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
+  }
+}
+
+
+function selectionIsInside(container, range) {
+  const ancestor = range.commonAncestorContainer;
+  return container.contains(ancestor.nodeType === Node.ELEMENT_NODE ? ancestor : ancestor.parentNode);
+}
+
+function applyHighlight(excerptId, color) {
+  const excerpt = document.getElementById(excerptId);
+  if (!excerpt) return;
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+  if (!selectionIsInside(excerpt, range)) return;
+
+  const span = document.createElement('span');
+  span.className = color === 'red' ? 'hl-red' : 'hl-yellow';
+  try {
+    const contents = range.extractContents();
+    span.appendChild(contents);
+    range.insertNode(span);
+    sel.removeAllRanges();
+    logEvent('doc_highlight', `${excerptId}:${color}`);
+    saveState();
+  } catch (e) {
+    console.warn('Highlight failed', e);
+  }
+}
+
+function clearHighlights(excerptId) {
+  const excerpt = document.getElementById(excerptId);
+  if (!excerpt) return;
+  excerpt.querySelectorAll('.hl-yellow, .hl-red').forEach(node => {
+    const parent = node.parentNode;
+    while (node.firstChild) parent.insertBefore(node.firstChild, node);
+    parent.removeChild(node);
+  });
+  excerpt.normalize();
+  logEvent('doc_highlight_clear', excerptId);
+  saveState();
+}
+
+// ── CHECKBOXES (Part 1) ────────────────────────────────────────
+function toggleCheck(el, id, type) {
+  checkState[id] = !checkState[id];
+  const cb = el.querySelector('input[type="checkbox"]');
+  cb.checked = checkState[id];
+
+  const selected = Object.entries(checkState).filter(([,v]) => v);
+  if (selected.length === 3) {
+    let traps = selected.filter(([k]) => checkTypes[k] === 'trap');
+    const fb = document.getElementById('check-feedback');
+    fb.style.display = 'block';
+    if (traps.length === 0) {
+      fb.style.background = '#dcfce7'; fb.style.color = '#166534';
+      fb.textContent = '✅ Nice — you picked the three that belong in your historical context paragraph!';
+    } else {
+      fb.style.background = '#fee2e2'; fb.style.color = '#991b1b';
+      fb.textContent = '🤔 One of those doesn\'t quite fit the crisis itself. Think about which one is from a different time and place.';
+    }
+    document.getElementById('p1-answer').value = selected.map(([k]) => k).join(',');
+  } else {
+    document.getElementById('check-feedback').style.display = 'none';
+    document.getElementById('p1-answer').value = '';
+  }
+  checkDownload();
+  saveState();
+}
+
+// ── YES/NO (Part 3) ────────────────────────────────────────────
+function setYN(val) {
+  ynValue = val;
+  document.getElementById('p3-yn').value = val;
+  document.getElementById('yn-yes').className = 'yn-btn' + (val === 'yes' ? ' yes-active' : '');
+  document.getElementById('yn-no').className  = 'yn-btn' + (val === 'no'  ? ' no-active'  : '');
+  checkDownload();
+  saveState();
+}
+
+// ── MULTIPLE CHOICE (Part 1 OI) ────────────────────────────────
+const MC_CORRECT = 0; // A is correct
+const MC_FEEDBACK = [
+  { correct: true,  msg: '✅ <strong>Correct!</strong> Containment is the perfect outside information here. It directly explains <em>why</em> the U.S. felt threatened — Soviet missiles 90 miles away weren\'t just a military problem, they were a direct challenge to the core American foreign policy strategy since 1947. That connection earns you outside information credit on the Regents.' },
+  { correct: false, msg: '❌ <strong>Not quite.</strong> A strong U.S.–Cuba trade relationship in the 1950s actually goes against what the documents are describing — by 1962, Castro had nationalized U.S. businesses and Cuba was hostile to the U.S. This would contradict, not support, the context.' },
+  { correct: false, msg: '❌ <strong>Close, but not the best fit.</strong> The Korean War is Cold War context, but it\'s too far removed from <em>why Cuba specifically mattered</em>. The SEQ graders want outside info that connects directly to the documents\' central tension — nuclear weapons in Cuba and the threat of war.' },
+  { correct: false, msg: '❌ <strong>Not the best choice.</strong> NASA and the Space Race are real Cold War context, but they don\'t connect to the <em>nuclear threat</em> or the U.S. response to Cuba that these documents are about. Outside information needs to directly explain the historical situation, not just be from the same era.' }
+];
+
+function selectMC(idx) {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('mc-' + i);
+    el.classList.remove('selected');
+    el.style.borderColor = '';
+    el.style.background = '';
+  }
+
+  const chosen = document.getElementById('mc-' + idx);
+  const fb = MC_FEEDBACK[idx];
+
+  if (fb.correct) {
+    chosen.style.borderColor = '#166534';
+    chosen.style.background  = '#dcfce7';
+  } else {
+    chosen.style.borderColor = '#dc2626';
+    chosen.style.background  = '#fee2e2';
+  }
+
+  const fbBox = document.getElementById('mc-feedback');
+  fbBox.style.display = 'block';
+  fbBox.style.background = fb.correct ? '#dcfce7' : '#fee2e2';
+  fbBox.style.color      = fb.correct ? '#166534' : '#991b1b';
+  fbBox.style.border     = fb.correct ? '1px solid #86efac' : '1px solid #fca5a5';
+  fbBox.innerHTML = fb.msg;
+
+  document.getElementById('mc-answer').value = String(idx);
+  checkDownload();
+  saveState();
+}
+
+// ── DOWNLOAD GATE ──────────────────────────────────────────────
+function checkDownload() {
+  const fields = [
+    'p2-audience','p2-purpose','p2-us','p2-soviet',
+    'p3-turkey','p4-reliable1','p4-reliable2','p4-biased',
+    'p5-s1','p5-s2','p5-s3','p5-s4','p5-s5'
+  ];
+  const allFilled = fields.every(id => {
+    const el = document.getElementById(id);
+    return el && el.value.trim().length >= 3;
+  });
+  const ynDone = ynValue !== '';
+  const p1Done = document.getElementById('p1-answer').value !== '';
+  const mcDone = document.getElementById('mc-answer').value !== '';
+
+  const btn = document.getElementById('download-btn');
+  const note = document.getElementById('download-note');
+  if (allFilled && ynDone && p1Done && mcDone) {
+    btn.classList.add('ready');
+    note.textContent = '✅ All sections complete — you\'re good to download!';
+  } else {
+    btn.classList.remove('ready');
+    note.textContent = 'Complete all required fields to unlock the download button.';
+  }
+  saveState();
+}
+
+
+function collectSubmissionData() {
+  const get = (id) => {
+    const el = document.getElementById(id);
+    return el ? (el.value || '').trim() : '';
+  };
+  return {
+    timestamp: new Date().toISOString(),
+    studentFirst,
+    studentLast,
+    studentPeriod,
+    elapsedSeconds,
+    strikes,
+    integrityEventCount: integrityLog.length,
+    p1Answer: get('p1-answer'),
+    mcAnswer: get('mc-answer'),
+    p2Audience: get('p2-audience'),
+    p2Purpose: get('p2-purpose'),
+    p2Us: get('p2-us'),
+    p2Soviet: get('p2-soviet'),
+    p3Turkey: get('p3-turkey'),
+    p3Yn: get('p3-yn'),
+    p4Reliable1: get('p4-reliable1'),
+    p4Reliable2: get('p4-reliable2'),
+    p4Biased: get('p4-biased'),
+    p5s1: get('p5-s1'),
+    p5s2: get('p5-s2'),
+    p5s3: get('p5-s3'),
+    p5s4: get('p5-s4'),
+    p5s5: get('p5-s5'),
+    integrityLogJson: JSON.stringify(integrityLog),
+    submissionSource: 'Cuban Missile Crisis HTML Worksheet',
+    worksheetVersion: '2026-google-sheets'
+  };
+}
+
+async function submitToGoogleSheets() {
+  const status = document.getElementById('sheet-submit-status');
+  if (!studentFirst || !studentLast || !studentPeriod) {
+    if (status) status.textContent = 'Enter first name, last name, and class period before submitting.';
+    return;
+  }
+  if (!APP_SCRIPT_URL || APP_SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbx1hsyh8rWuRLs39mwPSStPFQyv8BrXUer9qzB23gCGBmJWB99m2h4Xk8N28jPPxMqllw/exec')) {
+    if (status) status.textContent = 'Add your Google Apps Script web app URL in APP_SCRIPT_URL first.';
+    return;
+  }
+
+  const payload = collectSubmissionData();
+  const btn = document.getElementById('submit-sheet-btn');
+  const original = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; btn.style.opacity = '0.7'; }
+  if (status) status.textContent = 'Sending response to Google Sheets...';
+
+  try {
+    const res = await fetch(APP_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch (e) {}
+    if (!res.ok || (data && data.ok === false)) {
+      throw new Error((data && data.error) || 'Submission failed');
+    }
+    if (status) status.textContent = '✅ Sent to Google Sheets successfully.';
+    logEvent('sheet_submit', 'Response submitted to Google Sheets');
+  } catch (err) {
+    if (status) status.textContent = 'Submission failed: ' + err.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = original || '☁️ Submit to Google Sheets'; btn.style.opacity = '1'; }
+  }
+}
+
+// ── PDF DOWNLOAD ───────────────────────────────────────────────
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+  const margin = 50;
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const usable = pageW - margin * 2;
+  let y = margin;
+
+  const NAVY  = [13, 27, 42];
+  const GOLD  = [200, 153, 58];
+  const TEAL  = [15, 118, 110];
+  const BLUE  = [30, 64, 175];
+  const AMBER = [146, 64, 14];
+  const GREEN = [22, 101, 52];
+  const PURP  = [91, 33, 182];
+  const GRAY  = [107, 114, 128];
+  const WHITE = [255, 255, 255];
+
+  function checkPage(needed = 60) {
+    if (y + needed > pageH - margin) {
+      doc.addPage();
+      y = margin;
+      addFooter();
+    }
+  }
+
+  function addFooter() {
+    const pages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+      doc.setTextColor(...GRAY);
+      doc.text(
+        `${studentFirst} ${studentLast}  ·  ${studentPeriod}  ·  Cuban Missile Crisis – Reliability Worksheet  ·  Page ${i}`,
+        pageW / 2, pageH - 24, { align: 'center' }
+      );
+    }
+  }
+
+  function sectionHeader(num, title, color) {
+    checkPage(50);
+    doc.setFillColor(...color);
+    doc.roundedRect(margin, y, usable, 28, 4, 4, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...WHITE);
+    doc.text(`Part ${num}: ${title}`, margin + 10, y + 18);
+    y += 36;
+  }
+
+  function subLabel(text) {
+    checkPage(24);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...GRAY);
+    doc.text(text.toUpperCase(), margin, y);
+    y += 14;
+  }
+
+  function bodyText(text, opts = {}) {
+    checkPage(20);
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(opts.size || 10);
+    doc.setTextColor(...(opts.color || [30, 30, 30]));
+    const wrapped = doc.splitTextToSize(text, usable);
+    doc.text(wrapped, margin, y);
+    y += wrapped.length * (opts.lineH || 14) + (opts.gap || 4);
+  }
+
+  function answerBox(text, rows = 4) {
+    const boxH = rows * 16 + 12;
+    checkPage(boxH + 10);
+    doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.5);
+    doc.roundedRect(margin, y, usable, boxH, 3, 3, 'S');
+    if (text && text.trim()) {
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
+      const wrapped = doc.splitTextToSize(text, usable - 12);
+      doc.text(wrapped, margin + 6, y + 14);
+    } else {
+      doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(160,160,160);
+      doc.text('(no answer)', margin + 6, y + 14);
+    }
+    y += boxH + 10;
+  }
+
+  function inlinePair(label, val) {
+    checkPage(22);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GRAY);
+    doc.text(label + ':', margin, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
+    const wrapped = doc.splitTextToSize(val || '(blank)', usable - 90);
+    doc.text(wrapped, margin + 90, y);
+    y += Math.max(14, wrapped.length * 13) + 4;
+  }
+
+  // ── TITLE PAGE HEADER ─────────────────────────────────────────
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pageW, 90, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(...WHITE);
+  doc.text('Cuban Missile Crisis – Primary Source Reliability', pageW/2, 38, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(147, 197, 253);
+  doc.text('U.S. History & Government  ·  Regents SEQ Prep  ·  Northside Charter High School', pageW/2, 58, {align:'center'});
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...GOLD);
+  doc.text(`${studentFirst} ${studentLast}`, pageW/2, 76, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(147, 197, 253);
+  doc.text(studentPeriod, pageW/2, 88, {align:'center'});
+
+  y = 110;
+
+  // integrity block
+  const switchCount = integrityLog.filter(e => e.type === 'tab_switch').length;
+  const pasteCount  = integrityLog.filter(e => e.type === 'paste_blocked').length;
+  const dragCount   = integrityLog.filter(e => e.type === 'drag_drop_blocked').length;
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(margin, y, usable, 36, 4, 4, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GRAY);
+  doc.text('ACADEMIC INTEGRITY LOG', margin + 8, y + 13);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(50,50,50);
+  doc.text(`Tab switches: ${switchCount}   |   Paste attempts blocked: ${pasteCount}   |   Drag attempts blocked: ${dragCount}   |   Time: ${document.getElementById('timer-display').textContent}`, margin + 8, y + 27);
+  y += 50;
+
+  // ── PART 1 ─────────────────────────────────────────────────────
+  sectionHeader(1, 'Context Check-In', TEAL);
+  subLabel('Checked Items (should be 3 of 4)');
+  const p1val = document.getElementById('p1-answer').value;
+  const opts = ['ci-0','ci-1','ci-2','ci-3'];
+  const labels = [
+    'US & Soviet Union competing in a nuclear arms race.',
+    'US dropped atomic bomb on Japan to end WWII.',
+    'Castro allied with USSR; missiles placed 90 miles from FL.',
+    'US discovered secret Soviet missile sites in Cuba in 1962.'
+  ];
+  opts.forEach((id, i) => {
+    checkPage(16);
+    const checked = p1val.includes(id);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
+    doc.text((checked ? '☑ ' : '☐ ') + labels[i], margin + 4, y);
+    y += 15;
+  });
+  y += 6;
+
+  // MC Outside Information answer
+  subLabel('Outside Information MC — Which connects best to historical context?');
+  const mcVal = document.getElementById('mc-answer').value;
+  const mcLetters = ['A','B','C','D'];
+  const mcTexts = [
+    'A. U.S. containment policy — stopping spread of communism (CORRECT)',
+    'B. Strong U.S.–Cuba trade relationship in the 1950s',
+    'C. Korean War ended in stalemate in 1953',
+    'D. NASA space program expanding in early 1960s'
+  ];
+  checkPage(20);
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+  if (mcVal !== '') {
+    const correct = mcVal === '0';
+    doc.setTextColor(correct ? 22 : 185, correct ? 101 : 28, correct ? 52 : 28);
+    doc.text((correct ? '✓ ' : '✗ ') + 'Selected: ' + mcTexts[parseInt(mcVal)], margin + 4, y);
+  } else {
+    doc.setTextColor(160,160,160);
+    doc.text('(not answered)', margin + 4, y);
+  }
+  y += 20;
+
+  // ── PART 2 ─────────────────────────────────────────────────────
+  sectionHeader(2, 'Analyzing Document 1 for Point of View', BLUE);
+  subLabel('Audience');
+  answerBox(document.getElementById('p2-audience').value, 2);
+  subLabel('Purpose');
+  answerBox(document.getElementById('p2-purpose').value, 3);
+  subLabel('POV / Bias — Fill-in-the-Blank');
+  inlinePair('US portrayed as', document.getElementById('p2-us').value);
+  inlinePair('Soviet actions as', document.getElementById('p2-soviet').value);
+  y += 4;
+
+  // ── PART 3 ─────────────────────────────────────────────────────
+  sectionHeader(3, 'The "Missing Piece" in Document 2', AMBER);
+  subLabel('What did the US do in Turkey?');
+  answerBox(document.getElementById('p3-turkey').value, 3);
+  subLabel('Did Kennedy mention Turkey in Document 1?');
+  checkPage(20);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(30,30,30);
+  doc.text(ynValue ? ynValue.toUpperCase() : '(not answered)', margin + 4, y);
+  y += 20;
+
+  // ── PART 4 ─────────────────────────────────────────────────────
+  sectionHeader(4, 'The "Mixed Reliability" Connection', GREEN);
+  subLabel('Why is Document 1 RELIABLE?');
+  inlinePair('Point of view', document.getElementById('p4-reliable1').value);
+  inlinePair('Explained to', document.getElementById('p4-reliable2').value);
+  subLabel('Why is Document 1 BIASED?');
+  inlinePair('Failed to mention missiles in', document.getElementById('p4-biased').value);
+  y += 4;
+
+  // ── PART 5 ─────────────────────────────────────────────────────
+  sectionHeader(5, 'Drafting the Regents Paragraph', PURP);
+  subLabel('Sentence 1 — The Claim (Student Written)');
+  answerBox(document.getElementById('p5-s1').value, 3);
+  subLabel('Sentence 2 — The Reliable Part');
+  answerBox(document.getElementById('p5-s2').value, 3);
+  subLabel('Sentence 3 — The Evidence');
+  answerBox(document.getElementById('p5-s3').value, 3);
+  subLabel('Sentence 4 — The Bias / Unreliable Part (Student Written)');
+  answerBox(document.getElementById('p5-s4').value, 3);
+  subLabel('Sentence 5 — Use Doc 2 to Prove the Bias');
+  answerBox(document.getElementById('p5-s5').value, 3);
+  subLabel('Sentence 6 — Conclusion (Pre-Written)');
+  bodyText('Because Kennedy ignores the American missiles near the Soviet border, Document 1 is a reliable source for the US point of view, but it is biased and not a reliable summary of the whole truth.', {size:9,color:[80,80,80]});
+
+  // ── INTEGRITY APPENDIX ─────────────────────────────────────────
+  doc.addPage(); y = margin;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...NAVY);
+  doc.text('Academic Integrity Log (Full)', margin, y); y += 20;
+  const events = integrityLog.length > 0 ? integrityLog : [{ t:'0.0', type:'clean', detail:'No flagged events recorded.' }];
+  events.forEach(ev => {
+    checkPage(14);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(50,50,50);
+    const line = `[${ev.t}s]  ${ev.type.padEnd(20,' ')}  ${ev.detail}`;
+    const wrapped = doc.splitTextToSize(line, usable);
+    doc.text(wrapped, margin, y);
+    y += wrapped.length * 12 + 2;
+  });
+
+  addFooter();
+
+  const safeName = `${studentLast}_${studentFirst}`.replace(/[^a-z0-9]/gi,'_');
+  doc.save(`CubanMissileCrisis_${safeName}_${studentPeriod.replace(' ','')}.pdf`);
+}
+
+// ── PAGE LOAD: try to restore, else show gate ──────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Auto-save on every keystroke in any answer field
+  document.addEventListener('input', (e) => {
+    if (['TEXTAREA','INPUT'].includes(e.target.tagName) && e.target.type !== 'hidden') {
+      saveState();
+    }
+  });
+
+  // Attempt to restore a previous session
+  restoreState();
+  // If restore failed, gate is still visible — nothing else needed
+});
+</script>
+</body>
+</html>
