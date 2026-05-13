@@ -965,6 +965,7 @@ function startWorksheet() {
   setupIntegrityMonitor();
   logEvent('session_start', 'Worksheet opened');
   updateIntegritySummary();
+  checkDownload();
   saveState();
 }
 
@@ -1249,31 +1250,19 @@ function selectMC(idx) {
 
 // ── DOWNLOAD GATE ──────────────────────────────────────────────
 function checkDownload() {
-  const fields = [
-    'p2-audience','p2-purpose','p2-us','p2-soviet',
-    'p3-turkey','p4-reliable1','p4-reliable2','p4-biased',
-    'p5-s1','p5-s2','p5-s3','p5-s4','p5-s5'
-  ];
-  const allFilled = fields.every(id => {
-    const el = document.getElementById(id);
-    return el && el.value.trim().length >= 3;
-  });
-  const ynDone = ynValue !== '';
-  const p1Done = document.getElementById('p1-answer').value !== '';
-  const mcDone = document.getElementById('mc-answer').value !== '';
-
   const btn = document.getElementById('download-btn');
   const note = document.getElementById('download-note');
-  if (allFilled && ynDone && p1Done && mcDone) {
+  const hasIdentity = Boolean(studentFirst && studentLast && studentPeriod);
+
+  if (hasIdentity) {
     btn.classList.add('ready');
-    note.textContent = '✅ All sections complete — you\'re good to download!';
+    note.textContent = 'Student name and class period entered. You can download the PDF now.';
   } else {
     btn.classList.remove('ready');
-    note.textContent = 'Complete all required fields to unlock the download button.';
+    note.textContent = 'Enter first name, last name, and class period to unlock the PDF download.';
   }
   saveState();
 }
-
 
 function collectSubmissionData() {
   const get = (id) => {
