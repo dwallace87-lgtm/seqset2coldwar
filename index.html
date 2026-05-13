@@ -769,7 +769,7 @@ input[type="hidden"] {}
     </div>
     <button id="download-btn" onclick="downloadPDF()">⬇️ Download My Worksheet PDF</button>
     <button id="submit-sheet-btn" onclick="submitToGoogleSheets()" style="margin-left:0.75rem;background:#2563eb;color:white;border:none;border-radius:8px;padding:0.85rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;">☁️ Submit to Google Sheets</button>
-    <p id="sheet-submit-status" style="font-size:0.8rem;color:#dbeafe;margin-top:0.9rem;"></p>
+    <p id="sheet-submit-status" style="font-size:0.9rem;color:#dbeafe;margin-top:0.9rem;min-height:1.4em;font-weight:600;"></p>
     <p class="download-note" id="download-note">Complete all required fields to unlock the download button.</p>
   </div>
 
@@ -788,6 +788,7 @@ let checkTypes  = { 'ci-0': 'correct', 'ci-1': 'trap', 'ci-2': 'correct', 'ci-3'
 let ynValue = '';
 
 const SS_KEY = 'cmc_worksheet_v1'; // localStorage key so refreshes/resets do not clear violations
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1hsyh8rWuRLs39mwPSStPFQyv8BrXUer9qzB23gCGBmJWB99m2h4Xk8N28jPPxMqllw/exec';
 
 // ── SAVE STATE ─────────────────────────────────────────────────
 function saveState() {
@@ -1340,39 +1341,77 @@ function collectSubmissionData() {
 
 async function submitToGoogleSheets() {
   const status = document.getElementById('sheet-submit-status');
+  const btn = document.getElementById('submit-sheet-btn');
+
   if (!studentFirst || !studentLast || !studentPeriod) {
-    if (status) status.textContent = 'Enter first name, last name, and class period before submitting.';
+    if (status) {
+      status.textContent = 'Enter first name, last name, and class period before submitting.';
+      status.style.color = '#fecaca';
+      status.style.fontWeight = '600';
+    }
     return;
   }
-  if (!APP_SCRIPT_URL || APP_SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbx1hsyh8rWuRLs39mwPSStPFQyv8BrXUer9qzB23gCGBmJWB99m2h4Xk8N28jPPxMqllw/exec')) {
-    if (status) status.textContent = 'Add your Google Apps Script web app URL in APP_SCRIPT_URL first.';
+
+  if (!APP_SCRIPT_URL || !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(APP_SCRIPT_URL)) {
+    if (status) {
+      status.textContent = 'The Google Apps Script URL is missing or invalid.';
+      status.style.color = '#fecaca';
+      status.style.fontWeight = '600';
+    }
     return;
   }
 
   const payload = collectSubmissionData();
-  const btn = document.getElementById('submit-sheet-btn');
   const original = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; btn.style.opacity = '0.7'; }
-  if (status) status.textContent = 'Sending response to Google Sheets...';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'wait';
+  }
+  if (status) {
+    status.textContent = 'Sending response to Google Sheets...';
+    status.style.color = '#dbeafe';
+    status.style.fontWeight = '500';
+  }
 
   try {
     const res = await fetch(APP_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      redirect: 'follow'
     });
+
     const text = await res.text();
     let data = {};
     try { data = JSON.parse(text); } catch (e) {}
+
     if (!res.ok || (data && data.ok === false)) {
-      throw new Error((data && data.error) || 'Submission failed');
+      throw new Error((data && data.error) || ('Submission failed with status ' + res.status));
     }
-    if (status) status.textContent = '✅ Sent to Google Sheets successfully.';
+
+    if (status) {
+      status.textContent = '✅ Submission successful. Your responses were sent to Google Sheets.';
+      status.style.color = '#bbf7d0';
+      status.style.fontWeight = '700';
+    }
     logEvent('sheet_submit', 'Response submitted to Google Sheets');
+    try { window.alert('Submission successful. The student responses were sent to Google Sheets.'); } catch (e) {}
   } catch (err) {
-    if (status) status.textContent = 'Submission failed: ' + err.message;
+    if (status) {
+      status.textContent = 'Submission failed: ' + err.message;
+      status.style.color = '#fecaca';
+      status.style.fontWeight = '700';
+    }
+    console.error('Google Sheets submission error:', err);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = original || '☁️ Submit to Google Sheets'; btn.style.opacity = '1'; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = original || '☁️ Submit to Google Sheets';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
   }
 }
 
